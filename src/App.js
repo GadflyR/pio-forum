@@ -5,7 +5,7 @@ import Login from './components/Login';
 import { auth, db } from './firebaseConfig';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { ADMIN_UID } from './config/admin';
+import { ADMIN_UID } from './components/config/admin';
 
 const App = ({ toggleTheme, mode }) => {
   const [user, setUser] = useState(null);
