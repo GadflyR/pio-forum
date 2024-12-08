@@ -41,8 +41,8 @@ const Forum = () => {
   // Logout function
   const handleLogout = async () => {
     try {
-      await auth.signOut();
-      navigate('/login'); // Redirect to login page after logging out
+      await auth.signOut(); // Sign out the user
+      navigate('/login'); // Redirect to login page
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -74,11 +74,12 @@ const Forum = () => {
         {messages.map((message) => (
           <div key={message.id} className="message-card">
             <div className="message-header">
-              <img
-                src={message.photoURL || 'default-avatar.png'}
-                alt="User Avatar"
-                className="message-avatar"
-              />
+            <img
+              src={message.photoURL || '/default-avatar.png'} // Fallback to default avatar
+              alt="User Avatar"
+              className="message-avatar"
+              onError={(e) => (e.target.src = '/default-avatar.png')} // Handle broken image URLs
+            />
               <strong className="message-author">{message.createdBy}</strong>
             </div>
             <p className="message-text">{message.text}</p>

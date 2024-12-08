@@ -14,6 +14,8 @@ const Login = () => {
       console.error("Google Sign-In Error:", error.message);
       alert("Failed to login. Please try again.");
     }
+    const user = auth.currentUser;
+    console.log('User Info:', user);
   };
 
   return (
