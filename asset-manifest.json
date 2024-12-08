@@ -1,15 +1,10 @@
 {
   "files": {
-    "main.css": "/static/css/main.0e05b699.css",
-    "main.js": "/static/js/main.b326dcea.js",
-    "static/js/488.dade4154.chunk.js": "/static/js/488.dade4154.chunk.js",
-    "index.html": "/index.html",
-    "main.0e05b699.css.map": "/static/css/main.0e05b699.css.map",
-    "main.b326dcea.js.map": "/static/js/main.b326dcea.js.map",
-    "488.dade4154.chunk.js.map": "/static/js/488.dade4154.chunk.js.map"
+    "main.js": "//forum.pioexplore.com/static/js/main.67f566f5.js",
+    "index.html": "//forum.pioexplore.com/index.html",
+    "main.67f566f5.js.map": "//forum.pioexplore.com/static/js/main.67f566f5.js.map"
   },
   "entrypoints": [
-    "static/css/main.0e05b699.css",
-    "static/js/main.b326dcea.js"
+    "static/js/main.67f566f5.js"
   ]
 }
