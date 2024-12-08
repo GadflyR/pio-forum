@@ -1,0 +1,77 @@
+/* src/components/ChannelList.css */
+
+/* Channel List Container */
+.channel-list {
+    width: 250px;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+  }
+  
+  /* Channel List Title */
+  .channel-list-title {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+  
+  /* Individual Channel Item */
+  .channel-item {
+    cursor: pointer;
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    transition: background-color 0.2s;
+  }
+  
+  .channel-item:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .channel-item.active {
+    background-color: #d0d0d0;
+    font-weight: bold;
+  }
+  
+  /* Add Channel Form */
+  .add-channel-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .add-channel-input {
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .add-channel-button {
+    padding: 8px;
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .add-channel-button:hover {
+    background-color: #218838;
+  }
+  
+  /* Feedback Messages */
+  .error-message {
+    color: #dc3545; /* Bootstrap Danger color */
+    margin-top: 5px;
+    font-size: 0.9em;
+  }
+  
+  .success-message {
+    color: #28a745; /* Bootstrap Success color */
+    margin-top: 5px;
+    font-size: 0.9em;
+  }
+  
