@@ -62,7 +62,7 @@ const ChannelList = ({ channels, setActiveChannel, activeChannel, isAdmin }) => 
         return;
       }
 
-      // Add channel to Firestore (Assuming db and addDoc are correctly configured)
+      // Add channel to Firestore
       await addDoc(collection(db, 'channels'), { name: newChannelName.trim() });
       setNewChannelName('');
       setError('');

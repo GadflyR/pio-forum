@@ -1,11 +1,10 @@
 // src/components/Forum.js
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, query, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, doc, deleteDoc, getDocs, writeBatch, where, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import ChannelList from './ChannelList';
 import MessageBoard from './MessageBoard';
-import { ADMIN_UID } from './config/admin';
 import {
   AppBar,
   Toolbar,
@@ -19,11 +18,9 @@ import {
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
-const Forum = ({ toggleTheme, mode }) => {
+const Forum = ({ toggleTheme, mode, user, isAdmin }) => {
   const [activeChannel, setActiveChannel] = useState(null);
   const [channels, setChannels] = useState([]);
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loadingChannels, setLoadingChannels] = useState(true);
 
   // Fetching channels from Firestore with real-time updates
@@ -62,24 +59,7 @@ const Forum = ({ toggleTheme, mode }) => {
     );
 
     return () => unsubscribe();
-  }, [db, activeChannel, isAdmin]);
-
-  // Check user authentication and admin status
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        console.log('Authenticated User:', currentUser);
-        setIsAdmin(currentUser.uid === ADMIN_UID);
-        console.log('Is Admin:', currentUser.uid === ADMIN_UID);
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-        console.log('User logged out.');
-      }
-    });
-    return () => unsubscribe();
-  }, [auth]);
+  }, [activeChannel, isAdmin]);
 
   const handleLogout = () => {
     auth.signOut();
@@ -126,7 +106,13 @@ const Forum = ({ toggleTheme, mode }) => {
 
         {/* Message Board */}
         <Grid item xs={12} md={9}>
-          <MessageBoard activeChannel={activeChannel} user={user} />
+          {activeChannel ? (
+            <MessageBoard activeChannel={activeChannel} user={user} />
+          ) : (
+            <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+              No channels available.
+            </Typography>
+          )}
         </Grid>
       </Grid>
     </Box>
