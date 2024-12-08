@@ -2,7 +2,7 @@
   "name": "student-forum",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://https://forum.pioexplore.com/",
+  "homepage": "https://forum.pioexplore.com/",
   "dependencies": {
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
