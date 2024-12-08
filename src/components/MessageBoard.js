@@ -1,5 +1,5 @@
 // src/components/MessageBoard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import { db } from '../firebaseConfig';
 import {
   collection,
@@ -36,6 +36,16 @@ const MessageBoard = ({ activeChannel, user }) => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
+  // Create a ref to the end of the messages
+  const messagesEndRef = useRef(null);
+
+  // Function to scroll to the bottom
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   // Real-time listener for messages in the active channel
   useEffect(() => {
     if (!activeChannel) {
@@ -62,6 +72,9 @@ const MessageBoard = ({ activeChannel, user }) => {
         setMessages(msgs);
         setLoading(false);
         console.log('Fetched Messages:', msgs); // Debugging
+
+        // Scroll to bottom after messages are set
+        scrollToBottom();
       },
       (error) => {
         console.error('Error fetching messages:', error);
@@ -125,6 +138,9 @@ const MessageBoard = ({ activeChannel, user }) => {
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
       console.log('Message sent:', messageInput);
+
+      // Optionally, scroll to bottom after sending a message
+      // scrollToBottom(); // Not necessary if onSnapshot handles it
     } catch (err) {
       console.error('Error adding message:', err);
       setError('Failed to send message. Please try again.');
@@ -134,6 +150,11 @@ const MessageBoard = ({ activeChannel, user }) => {
       setOpenSnackbar(true);
     }
   };
+
+  // Scroll to bottom whenever messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -177,6 +198,8 @@ const MessageBoard = ({ activeChannel, user }) => {
             </Card>
           ))
         )}
+        {/* Dummy div to scroll into view */}
+        <div ref={messagesEndRef} />
       </Box>
 
       {/* Send Message Form */}
