@@ -2,9 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc, getDocs, writeBatch, where, updateDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
-import ChannelList from './ChannelList';
-import MessageBoard from './MessageBoard';
 import {
   AppBar,
   Toolbar,
@@ -17,6 +14,8 @@ import {
 } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import ChannelList from './ChannelList';
+import MessageBoard from './MessageBoard';
 
 const Forum = ({ toggleTheme, mode, user, isAdmin }) => {
   const [activeChannel, setActiveChannel] = useState(null);

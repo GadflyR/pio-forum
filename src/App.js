@@ -25,15 +25,20 @@ const App = ({ toggleTheme, mode }) => {
         if (!userDocSnap.exists()) {
           // Create user document if it doesn't exist
           await setDoc(userDocRef, {
-            displayName: currentUser.displayName || '',
-            email: currentUser.email,
+            displayName: currentUser.displayName || 'Anonymous',
+            email: currentUser.email || '',
             bio: '',
             avatarUrl: currentUser.photoURL || '',
+            isAnonymous: currentUser.isAnonymous,
           });
         } else {
           // Optionally, update displayName and photoURL in Firestore
           const userData = userDocSnap.data();
-          if (userData.displayName !== currentUser.displayName || userData.avatarUrl !== currentUser.photoURL) {
+          if (
+            userData.displayName !== currentUser.displayName ||
+            userData.avatarUrl !== currentUser.photoURL ||
+            userData.isAnonymous !== currentUser.isAnonymous
+          ) {
             await updateProfile(currentUser, {
               displayName: userData.displayName || currentUser.displayName,
               photoURL: userData.avatarUrl || currentUser.photoURL,

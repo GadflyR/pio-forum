@@ -3,209 +3,129 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
 import {
   collection,
-  addDoc,
-  serverTimestamp,
   query,
   where,
-  orderBy,
   onSnapshot,
+  addDoc,
+  Timestamp,
 } from 'firebase/firestore';
 import {
   Box,
   Typography,
+  List,
+  ListItem,
+  ListItemText,
   TextField,
   Button,
-  Card,
-  CardHeader,
-  Avatar,
-  CardContent,
   CircularProgress,
-  Snackbar,
-  Alert,
 } from '@mui/material';
 
 const MessageBoard = ({ activeChannel, user }) => {
   const [messages, setMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState('');
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(true);
 
-  // Snackbar state
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  // Real-time listener for messages in the active channel
   useEffect(() => {
-    if (!activeChannel) {
-      setMessages([]);
-      setLoading(false);
-      return;
-    }
+    if (!activeChannel) return;
 
-    console.log('Setting up message listener for channel:', activeChannel.name); // Debugging
-
-    const qQuery = query(
-      collection(db, 'messages'),
-      where('channelId', '==', activeChannel.id),
-      orderBy('timestamp', 'asc')
-    );
+    const messagesRef = collection(db, 'messages');
+    const q = query(messagesRef, where('channelId', '==', activeChannel.id), orderBy('createdAt', 'asc'));
 
     const unsubscribe = onSnapshot(
-      qQuery,
-      (querySnapshot) => {
-        const msgs = [];
-        querySnapshot.forEach((doc) => {
-          msgs.push({ id: doc.id, ...doc.data() });
-        });
-        setMessages(msgs);
-        setLoading(false);
-        console.log('Fetched Messages:', msgs); // Debugging
+      q,
+      (snapshot) => {
+        const messagesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setMessages(messagesData);
+        setLoadingMessages(false);
       },
       (error) => {
         console.error('Error fetching messages:', error);
-        setError('Failed to load messages.');
-        setLoading(false);
-        setSnackbarMessage('Failed to load messages.');
-        setSnackbarSeverity('error');
-        setOpenSnackbar(true);
+        setLoadingMessages(false);
       }
     );
 
     return () => unsubscribe();
-  }, [activeChannel, db]);
+  }, [activeChannel]);
 
-  // Send new message to Firestore
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-
-    if (messageInput.trim() === '') {
-      setError('Message cannot be empty.');
-      setSuccess('');
-      setSnackbarMessage('Message cannot be empty.');
-      setSnackbarSeverity('warning');
-      setOpenSnackbar(true);
-      return;
-    }
-
-    if (!user) {
-      setError('You must be logged in to send messages.');
-      setSuccess('');
-      setSnackbarMessage('You must be logged in to send messages.');
-      setSnackbarSeverity('warning');
-      setOpenSnackbar(true);
-      return;
-    }
-
-    if (!activeChannel) {
-      setError('No active channel selected.');
-      setSuccess('');
-      setSnackbarMessage('No active channel selected.');
-      setSnackbarSeverity('warning');
-      setOpenSnackbar(true);
-      return;
-    }
-
-    console.log('Sending message to channel:', activeChannel.name); // Debugging
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
 
     try {
       await addDoc(collection(db, 'messages'), {
-        text: messageInput.trim(),
         channelId: activeChannel.id,
+        text: newMessage.trim(),
         userId: user.uid,
-        userName: user.displayName,
-        userAvatar: user.photoURL || '',
-        timestamp: serverTimestamp(),
+        displayName: user.isAnonymous ? 'Anonymous' : (user.displayName || 'Anonymous'),
+        createdAt: Timestamp.now(),
       });
-      setMessageInput('');
-      setSuccess('Message sent successfully!');
-      setError('');
-      setSnackbarMessage('Message sent successfully!');
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-      console.log('Message sent:', messageInput);
-    } catch (err) {
-      console.error('Error adding message:', err);
-      setError('Failed to send message. Please try again.');
-      setSuccess('');
-      setSnackbarMessage('Failed to send message.');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-    setSnackbarMessage('');
-  };
+  if (loadingMessages) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ maxWidth: '100%', bgcolor: 'background.paper', borderRadius: 1, boxShadow: 3, padding: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '80vh' }}>
       <Typography variant="h6" gutterBottom>
-        {activeChannel ? `# ${activeChannel.name}` : 'Select a Channel'}
+        {activeChannel.name}
       </Typography>
-
-      {/* Messages */}
-      <Box sx={{ maxHeight: '60vh', overflowY: 'auto', mb: 2 }}>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : messages.length === 0 ? (
-          <Typography variant="body1">No messages in this channel.</Typography>
-        ) : (
-          messages.map((msg) => (
-            <Card key={msg.id} sx={{ mb: 2 }}>
-              <CardHeader
-                avatar={
-                  <Avatar
-                    src={msg.userAvatar || '/default-avatar.png'}
-                    alt={msg.userName}
-                  >
-                    {msg.userName ? msg.userName.charAt(0).toUpperCase() : 'U'}
-                  </Avatar>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', paddingRight: 2 }}>
+        <List>
+          {messages.map((message) => (
+            <ListItem key={message.id} alignItems="flex-start">
+              <ListItemText
+                primary={
+                  <Typography variant="subtitle2" color="text.primary">
+                    {message.displayName}
+                  </Typography>
                 }
-                title={msg.userName || 'Anonymous'}
-                subheader={msg.timestamp
-                  ? new Date(msg.timestamp.seconds * 1000).toLocaleString()
-                  : 'Just now'}
+                secondary={
+                  <>
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      {new Date(message.createdAt?.toDate()).toLocaleString()}
+                    </Typography>
+                    {' — '}
+                    {message.text}
+                  </>
+                }
               />
-              <CardContent>
-                <Typography variant="body1">{msg.text}</Typography>
-              </CardContent>
-            </Card>
-          ))
-        )}
+            </ListItem>
+          ))}
+        </List>
       </Box>
-
-      {/* Send Message Form */}
-      {user && activeChannel && (
-        <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            label="Write a message..."
-            variant="outlined"
-            fullWidth
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-          />
-          <Button type="submit" variant="contained" color="primary">
-            Send
-          </Button>
-        </Box>
-      )}
-
-      {/* Snackbar for Notifications */}
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+      <Box sx={{ display: 'flex', mt: 2 }}>
+        <TextField
+          variant="outlined"
+          placeholder="Type your message..."
+          fullWidth
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
+        />
+        <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleSendMessage}>
+          Send
+        </Button>
+      </Box>
     </Box>
   );
 };
