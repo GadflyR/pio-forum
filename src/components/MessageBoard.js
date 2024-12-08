@@ -1,5 +1,5 @@
 // src/components/MessageBoard.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
 import {
   collection,
@@ -36,16 +36,6 @@ const MessageBoard = ({ activeChannel, user }) => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  // Reference to the end of the messages list for auto-scrolling
-  const messagesEndRef = useRef(null);
-
-  // Function to scroll to the bottom of the messages
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   // Real-time listener for messages in the active channel
   useEffect(() => {
     if (!activeChannel) {
@@ -72,7 +62,6 @@ const MessageBoard = ({ activeChannel, user }) => {
         setMessages(msgs);
         setLoading(false);
         console.log('Fetched Messages:', msgs); // Debugging
-        scrollToBottom(); // Scroll to bottom when messages are fetched
       },
       (error) => {
         console.error('Error fetching messages:', error);
@@ -86,11 +75,6 @@ const MessageBoard = ({ activeChannel, user }) => {
 
     return () => unsubscribe();
   }, [activeChannel, db]);
-
-  // Scroll to bottom whenever messages update
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   // Send new message to Firestore
   const handleSendMessage = async (e) => {
@@ -130,7 +114,7 @@ const MessageBoard = ({ activeChannel, user }) => {
         text: messageInput.trim(),
         channelId: activeChannel.id,
         userId: user.uid,
-        userName: user.displayName || (user.isAnonymous ? 'Anonymous' : 'User'),
+        userName: user.displayName,
         userAvatar: user.photoURL || '',
         timestamp: serverTimestamp(),
       });
@@ -157,32 +141,13 @@ const MessageBoard = ({ activeChannel, user }) => {
   };
 
   return (
-    <Box
-      sx={{
-        maxWidth: '100%',
-        bgcolor: 'background.paper',
-        borderRadius: 1,
-        boxShadow: 3,
-        padding: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '80vh',
-      }}
-    >
+    <Box sx={{ maxWidth: '100%', bgcolor: 'background.paper', borderRadius: 1, boxShadow: 3, padding: 2 }}>
       <Typography variant="h6" gutterBottom>
         {activeChannel ? `# ${activeChannel.name}` : 'Select a Channel'}
       </Typography>
 
       {/* Messages */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          overflowY: 'auto',
-          mb: 2,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <Box sx={{ maxHeight: '60vh', overflowY: 'auto', mb: 2 }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
             <CircularProgress />
@@ -202,11 +167,9 @@ const MessageBoard = ({ activeChannel, user }) => {
                   </Avatar>
                 }
                 title={msg.userName || 'Anonymous'}
-                subheader={
-                  msg.timestamp
-                    ? new Date(msg.timestamp.seconds * 1000).toLocaleString()
-                    : 'Just now'
-                }
+                subheader={msg.timestamp
+                  ? new Date(msg.timestamp.seconds * 1000).toLocaleString()
+                  : 'Just now'}
               />
               <CardContent>
                 <Typography variant="body1">{msg.text}</Typography>
@@ -214,8 +177,6 @@ const MessageBoard = ({ activeChannel, user }) => {
             </Card>
           ))
         )}
-        {/* Dummy div to scroll into view */}
-        <div ref={messagesEndRef} />
       </Box>
 
       {/* Send Message Form */}
@@ -227,12 +188,6 @@ const MessageBoard = ({ activeChannel, user }) => {
             fullWidth
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage(e);
-              }
-            }}
           />
           <Button type="submit" variant="contained" color="primary">
             Send
